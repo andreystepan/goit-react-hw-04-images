@@ -1,10 +1,11 @@
 import { ImageGalleryItem } from 'components/ImageGalleryItem';
 
-import { Component } from 'react';
 import API from '../../API/API';
 import { BtnLoadMore } from 'components/Button';
 import { Modal } from '../Modal';
 import { Gallery } from './ImageGallery.styled';
+import { useState } from 'react';
+import { useEffect } from 'react';
 
 const imgMapper = dataHits => {
   return dataHits.map(({ id, webformatURL, largeImageURL }) => {
@@ -12,74 +13,60 @@ const imgMapper = dataHits => {
   });
 };
 
-export class ImageGallery extends Component {
-  state = { largeImg: null, images: [], page: 1, loading: false };
+export function ImageGallery({ query }) {
+  const [largeImg, setLargeImg] = useState(null);
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { query } = this.props;
-    const { page } = this.state;
-    if (prevProps.query !== query) {
-      this.setState({ page: 1 });
-      return this.getImages(true);
+  useEffect(() => {
+    setPage(1);
+    setImages([]);
+    setLoading(true);
+  }, [query]);
+
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
-
-    if (prevState.page !== page && page !== 1) {
-      return this.getImages(false);
-    }
-  }
-
-  getImages = newQuery => {
-    const { query } = this.props;
-    // const { page } = this.state;
-    const page = newQuery ? 1 : this.state.page;
-    this.setState({ loading: true });
 
     API.fetchApi(query, page)
-      .then(data =>
-        this.setState(prevState => ({
-          images: newQuery
-            ? imgMapper(data.hits)
-            : [...prevState.images, ...imgMapper(data.hits)],
-        }))
-      )
-      .finally(() => this.setState({ loading: false }));
+      .then(data => setImages(prevImg => [...prevImg, ...imgMapper(data.hits)]))
+      .finally(() => setLoading(false));
+  }, [query, page]);
+
+  const handleClickImg = largeImg => {
+    setLargeImg(largeImg);
   };
 
-  handleClickImg = largeImg => {
-    this.setState({ largeImg });
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  loadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const closeModal = () => {
+    setLargeImg(null);
   };
 
-  closeModal = () => {
-    this.setState({ largeImg: null });
-  };
-  render() {
-    const { images, largeImg } = this.state;
-    const { query } = this.props;
-    return (
-      <>
-        {images.length > 0 && (
-          <Gallery>
-            {images.map(({ webformatURL, largeImageURL, id }) => (
-              <ImageGalleryItem
-                onClick={this.handleClickImg}
-                query={query}
-                key={id}
-                smallImg={webformatURL}
-                largeImg={largeImageURL}
-              />
-            ))}
-          </Gallery>
-        )}
+  return (
+    <>
+      {images.length > 0 && (
+        <Gallery>
+          {images.map(({ webformatURL, largeImageURL, id }) => (
+            <ImageGalleryItem
+              onClick={handleClickImg}
+              query={query}
+              key={id}
+              smallImg={webformatURL}
+              largeImg={largeImageURL}
+            />
+          ))}
+        </Gallery>
+      )}
 
-        {images.length > 0 && <BtnLoadMore onClick={this.loadMore} />}
-        {largeImg && (
-          <Modal largeImg={largeImg} query={query} onClose={this.closeModal} />
-        )}
-      </>
-    );
-  }
+      {images.length > 0 && <BtnLoadMore onClick={loadMore} />}
+      {largeImg && (
+        <Modal largeImg={largeImg} query={query} onClose={closeModal} />
+      )}
+    </>
+  );
 }
