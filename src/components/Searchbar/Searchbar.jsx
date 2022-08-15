@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { toast } from 'react-toastify';
 import { BsSearch } from 'react-icons/bs';
 import { PropTypes } from 'prop-types';
@@ -8,49 +7,43 @@ import {
   BtnSearchForm,
   Input,
 } from './Searchbar.styled';
+import { useState } from 'react';
 
-export class Searchbar extends Component {
-  state = {
-    query: '',
-    images: [],
+export function Searchbar({ onSubmit }) {
+  const [query, setQuery] = useState('');
+
+  const handleChange = e => {
+    setQuery(e.currentTarget.value);
   };
 
-  handleChange = e => {
-    const { value } = e.currentTarget;
-
-    this.setState({ query: value });
-  };
-
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    if (this.state.query.trim() === '') {
+    if (query.trim() === '') {
       toast.error('Введите имя запроса');
       return;
     }
-    this.props.onSubmit(this.state.query);
-    this.setState({ query: '' });
+    onSubmit(query);
+    setQuery('');
   };
 
-  render() {
-    return (
-      <SearchHeader>
-        <SearchForm onSubmit={this.handleSubmit}>
-          <BtnSearchForm type="submit">
-            <BsSearch />
-          </BtnSearchForm>
-          <Input
-            onChange={this.handleChange}
-            value={this.state.query}
-            name="query"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-          />
-        </SearchForm>
-      </SearchHeader>
-    );
-  }
+  return (
+    <SearchHeader>
+      <SearchForm onSubmit={handleSubmit}>
+        <BtnSearchForm type="submit">
+          <BsSearch />
+        </BtnSearchForm>
+        <Input
+          onChange={handleChange}
+          value={query}
+          name="query"
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+        />
+      </SearchForm>
+    </SearchHeader>
+  );
 }
 
 Searchbar.propTypes = {
