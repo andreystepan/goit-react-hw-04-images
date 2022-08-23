@@ -55,10 +55,10 @@ export function App() {
 
   return (
     <div>
-      {loading && <Loader />}
       <Searchbar onSubmit={handleFormSubmit} />
       <ToastContainer />
       <ImageGallery query={query} images={images} onClick={handleClickImg} />
+      {loading && <Loader />}
       {images.length > 0 && <BtnLoadMore onClick={loadMore} />}
       {largeImg && (
         <Modal largeImg={largeImg} query={query} onClose={closeModal} />
