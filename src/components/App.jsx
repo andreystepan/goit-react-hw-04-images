@@ -22,10 +22,9 @@ export function App() {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    setPage(1);
-    setImages([]);
-  }, [query]);
+  // useEffect(() => {
+
+  // }, [query]);
 
   useEffect(() => {
     if (query === '') {
@@ -51,6 +50,8 @@ export function App() {
 
   const handleFormSubmit = query => {
     setQuery(query);
+    setPage(1);
+    setImages([]);
   };
 
   return (
